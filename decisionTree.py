@@ -8,9 +8,6 @@ X=iris.data
 #0 - Iris-setosa, 1 - Iris-versicolor, 2 - Iris-virginica
 y=iris.target
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.1)
-train = np.c_[X_train, y_train]
-test = np.c_[X_test, y_test]
 
 # calculate the number of each label
 def num_of_label(rows):
@@ -113,22 +110,32 @@ def classify(row, node):
         return classify(row, node.false_branch)
 
 
-my_tree = build_tree(train)
-# 0 - Iris-setosa, 1 - Iris-versicolor, 2 - Iris-virginica
-type = {0.0:"Iris-setosa", 1.0: "Iris-versicolor", 2.0: "Iris-virginica"}
-total = 0
-accurate = 0
-for row in test:
-    label = list(classify(row, my_tree))
-    char = ""
-    if label == [0.0]:
-        char = "Iris-setosa"
-    if label == [1.0]:
-        char = "Iris-versicolor"
-    if label == [2.0]:
-        char = "Iris-virginica"
-    print ((row[:-1]), " is predicted to be " + char + ". In reality, it is" + type[row[-1]])
-    if char == type[row[-1]]:
-        accurate+=1
-    total+=1
-print("accurate prediciton:", accurate, ", total prediction:", total)
+
+def run_classifier(pct_train):
+    # Get test and train data from complete dataset
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 1 - pct_train)
+    train = np.c_[X_train, y_train]
+    test = np.c_[X_test, y_test]
+
+
+
+    my_tree = build_tree(train)
+    # 0 - Iris-setosa, 1 - Iris-versicolor, 2 - Iris-virginica
+    type = {0.0:"Iris-setosa", 1.0: "Iris-versicolor", 2.0: "Iris-virginica"}
+    total = 0
+    accurate = 0
+    for row in test:
+        label = list(classify(row, my_tree))
+        char = ""
+        if label == [0.0]:
+            char = "Iris-setosa"
+        if label == [1.0]:
+            char = "Iris-versicolor"
+        if label == [2.0]:
+            char = "Iris-virginica"
+        print ((row[:-1]), " is predicted to be " + char + ". In reality, it is" + type[row[-1]])
+        if char == type[row[-1]]:
+            accurate+=1
+        total+=1
+    #print("accurate prediciton:", accurate, ", total prediction:", total)
+    return accurate, total
