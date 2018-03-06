@@ -1,6 +1,4 @@
 import sys
-from random_forest_IRIS import run_classifier as run_random_forest
-from decisionTree import run_classifier as run_decision_tree
 from parser import parse_data as parse
 
 
@@ -14,7 +12,7 @@ PCT_TRAIN = 0.90
 
 
 CLASSIFIERS = ['random-forest', 'decision-tree']
-DATASETS = ['iris']
+DATASETS = ['iris', 'cars']
 
 TESTS = 0
 TOTAL_CORRECT = 0
@@ -23,27 +21,47 @@ TOTAL_CORRECT = 0
 def main():
     global CLASSIFIER, N_TRIALS, PCT_TRAIN, TESTS, TOTAL_CORRECT
     get_args()
-
+    print("DATASET="+str(DATASET))
 
     if CLASSIFIER == 'random-forest':
-        # Parse data from file
         if DATASET == 'iris':
+            try:
+                from random_forest_IRIS import run_classifier as run_random_forest
+            except:
+                print("Cannot import random forest classifier for the iris dataset. Exiting.")
+                sys.exit()
+
             data = parse('Iris.txt', data_format=[float, float, float, float, str])
         
-        # Count all possible types that the data can be classified as (assuming last element is classification)
-        classes = []
-        for d in range(len(data)):
-            if data[d][-1] not in classes: classes.append(data[d][-1])
+        elif DATASET == 'cars':
+            try:
+                from random_forest_CARS import run_classifier as run_random_forest
+            except:
+                print("Cannot import random forest classifier for the car dataset. Exiting.")
+                sys.exit()
 
+            data = parse('Car.csv', data_format=[str, str, str, int, int, str, str])
+        
         # Run the random forests classifier N_TRIALS times on data from DATASET
         for i in range(N_TRIALS):
             print("\nRunning trial "+str(i+1)+" of "+str(N_TRIALS)+"...")
-            correct, tests = run_random_forest(data, classes, pct_train=PCT_TRAIN)
+            correct, tests = run_random_forest(data, pct_train=PCT_TRAIN)
             TOTAL_CORRECT += correct
             TESTS += tests
 
 
     elif CLASSIFIER == 'decision-tree':
+        if DATASET == 'iris':
+            try:
+                from decisionTree import run_classifier as run_decision_tree
+            except:
+                print("Cannot import decision tree classifier for the iris dataset. Exiting.")
+                sys.exit()
+
+        elif DATASET == 'cars':
+            print("Decision tree not yet implemented for car dataset. Exiting.")
+            sys.exit()
+
         # Run the iris classifier N_TRIALS times
         for i in range(N_TRIALS):
             print("\nRunning trial "+str(i+1)+" of "+str(N_TRIALS)+"...")
@@ -59,7 +77,7 @@ def main():
 def get_args():
     '''Parse any command line arguments to the program
         No parameters, no return (stored in globals)'''
-    global CLASSIFIER, N_TRIALS, PCT_TRAIN
+    global CLASSIFIER, N_TRIALS, PCT_TRAIN, DATASET
 
     for arg in sys.argv:
         if arg.startswith('--classifier='): 
