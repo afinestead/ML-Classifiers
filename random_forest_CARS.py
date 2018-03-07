@@ -58,14 +58,12 @@ def run_classifier(data, pct_train=0.90, verbose=True):
     for line in test_attr:
         test_attr[linenum] = get_numeric(line, allClasses)
         linenum += 1
-    print(test_attr)
 
     # Split training data into attributes/classification
     x = []
     for line in training_data:
         x.append(get_numeric(line[1:], allClasses))
 
-    print(x)
 
     y = [allClasses[0][d[0]] for d in training_data]
 
@@ -100,7 +98,7 @@ def run_classifier(data, pct_train=0.90, verbose=True):
 
         string += str(test)+" is predicted to be "+str(pred)+". In reality, it is "+str(real)
 
-        print(string)
+        if verbose: print(string)
 
     tests += len(predictions)
 

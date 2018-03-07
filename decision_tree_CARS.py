@@ -111,7 +111,7 @@ def test_decision_tree(test_data, title, unique_targets, tree):
     #return no_of_correct_answers/len(test_data) * 100
     return no_of_correct_answers, len(test_data), pred
 
-def run_classifier(PCT_TRAIN):
+def run_classifier(PCT_TRAIN, verbose=True):
     #Function to read the dataset from csv file
     with open(samplefilepath, 'r') as f:
       reader = csv.reader(f)
@@ -138,13 +138,15 @@ def run_classifier(PCT_TRAIN):
       col5 = {'small': 0, 'med': 1, 'big': 2}
       col6 = {'low': 0, 'med':1, 'high': 2}
       listn = []
-      for i in range(0, len(pred)):
-          listn = [col1[X_test[i][1]], col2[X_test[i][2]], col3[X_test[i][3]], col4[X_test[i][4]], col5[X_test[i][5]],
-                  col6[X_test[i][6]]]
-          if pred[i] == X_test[i][0]:
-              print ("(CORRECT) ", listn," is predicted to be " + pred[i] + ". In reality, it is " + X_test[i][0])
-          else:
-              print("(INCORRECT) ", listn," is predicted to be " + pred[i] + ". In reality, it is " + X_test[i][0])
+
+      if verbose:
+        for i in range(0, len(pred)):
+            listn = [col1[X_test[i][1]], col2[X_test[i][2]], col3[X_test[i][3]], col4[X_test[i][4]], col5[X_test[i][5]],
+                    col6[X_test[i][6]]]
+            if pred[i] == X_test[i][0]:
+                print ("(CORRECT) ", listn," is predicted to be " + pred[i] + ". In reality, it is " + X_test[i][0])
+            else:
+                print("(INCORRECT) ", listn," is predicted to be " + pred[i] + ". In reality, it is " + X_test[i][0])
 
       #print("accurate prediciton: ", accurate, ", total prediction:", total)
       return accurate, total

@@ -1,5 +1,5 @@
 from sklearn import datasets
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
 import numpy as np
 
 # Get sklearn IRIS data
@@ -111,7 +111,7 @@ def classify(row, node):
 
 
 
-def run_classifier(pct_train):
+def run_classifier(pct_train, verbose=True):
     # Get test and train data from complete dataset
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 1 - pct_train)
     train = np.c_[X_train, y_train]
@@ -133,7 +133,7 @@ def run_classifier(pct_train):
             char = "Iris-versicolor"
         if label == [2.0]:
             char = "Iris-virginica"
-        print ((row[:-1]), " is predicted to be " + char + ". In reality, it is" + type[row[-1]])
+        if verbose: print ((row[:-1]), " is predicted to be " + char + ". In reality, it is" + type[row[-1]])
         if char == type[row[-1]]:
             accurate+=1
         total+=1
