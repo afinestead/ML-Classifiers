@@ -1,41 +1,29 @@
 import sys
 from parser import parse_data as parse
-import matplotlib.pyplot as plt
 
 
-USAGE = "USAGE: python3 Classifiers.py [--classifier=(str)] [--dataset=(str)] [--trials=(int)] [--train=(float)] [--compare] [--testlearn]"
+USAGE = "USAGE: python3 Classifiers.py [--classifier=(str)] [--dataset=(str)] [--trials=(int)] [--train=(float)]"
 
 # Arguments to classifier program
 CLASSIFIER = 'random-forest'
 DATASET = 'iris'
 N_TRIALS = 1
 PCT_TRAIN = 0.90
-COMPARE = False
-VERBOSE = None
-TEST_LEARNING = False
 
 
 CLASSIFIERS = ['random-forest', 'decision-tree']
 DATASETS = ['iris', 'cars']
 
+TESTS = 0
+TOTAL_CORRECT = 0
+
 
 def main():
-    global CLASSIFIER, N_TRIALS, PCT_TRAIN, VERBOSE, TEST_LEARNING
+    global CLASSIFIER, N_TRIALS, PCT_TRAIN, TESTS, TOTAL_CORRECT
     get_args()
+    print("DATASET="+str(DATASET))
 
-    if VERBOSE is None: VERBOSE = not COMPARE
-    if TEST_LEARNING: pcts = [x / 100 for x in range(5, 100, 5)]
-
-
-    random_forest_tests = 0
-    random_forest_correct = 0
-
-    decision_tree_tests = 0
-    decision_tree_correct = 0
-
-
-    # If comparing (using both classifiers), or using the random forest only
-    if COMPARE or CLASSIFIER == 'random-forest':
+    if CLASSIFIER == 'random-forest':
         if DATASET == 'iris':
             try:
                 from random_forest_IRIS import run_classifier as run_random_forest
@@ -54,105 +42,46 @@ def main():
 
             data = parse('Car.csv', data_format=[str, str, str, int, int, str, str])
         
-        if TEST_LEARNING:
-            random_forest_results = []
-            for i in pcts:
-                print("\nTesting random forest learning ability by training on "+str(i)+"%"+" of data")
-                correct, tests = run_random_forest(data, pct_train=i, verbose=VERBOSE)
-                print("\t%.2f" % (100 * correct / tests), "%"+" correct")
-                random_forest_results.append((correct / tests))
-
         # Run the random forests classifier N_TRIALS times on data from DATASET
-        else:
-            for i in range(N_TRIALS):
-                print("\nRunning random forest trial "+str(i+1)+" of "+str(N_TRIALS)+"...")
-                correct, tests = run_random_forest(data, pct_train=PCT_TRAIN, verbose=VERBOSE)
-                random_forest_correct += correct
-                random_forest_tests += tests
+        for i in range(N_TRIALS):
+            print("\nRunning trial "+str(i+1)+" of "+str(N_TRIALS)+"...")
+            correct, tests = run_random_forest(data, pct_train=PCT_TRAIN)
+            TOTAL_CORRECT += correct
+            TESTS += tests
 
 
-
-    if COMPARE or CLASSIFIER == 'decision-tree':
+    elif CLASSIFIER == 'decision-tree':
         if DATASET == 'iris':
             try:
-                from decisionTree import run_classifier as run_decision_tree
+                from decision_tree_IRIS import run_classifier as run_decision_tree
             except:
                 print("Cannot import decision tree classifier for the iris dataset. Exiting.")
                 sys.exit()
 
-
         elif DATASET == 'cars':
-            print("Decision tree not yet implemented for car dataset. Exiting.")
-            sys.exit()
-
-        
-        if TEST_LEARNING:
-            decision_tree_results = []
-            for i in pcts:
-                print("\nTesting decision tree learning ability by training on "+str(i)+"%"+" of data")
-                correct, tests = run_decision_tree(pct_train=i, verbose=VERBOSE)
-                print("\t%.2f" % (100 * correct / tests), "%"+" correct")
-                decision_tree_results.append((correct / tests))
-
-        # Run the classifier N_TRIALS times
-        else:
-            for i in range(N_TRIALS):
-                print("\nRunning decision tree trial "+str(i+1)+" of "+str(N_TRIALS)+"...")
-                correct, tests = run_decision_tree(pct_train=PCT_TRAIN, verbose=VERBOSE)
-                decision_tree_correct += correct
-                decision_tree_tests += tests
-
-        
-
-    # If we ran the random forest classifier, print the results to the console
-    if random_forest_tests != 0:
-        print("\nFINAL RESULT FOR RANDOM FOREST CLASSIFIER:")
-        print("\t"+str(random_forest_correct)+"/"+str(random_forest_tests)+" were correctly predicted ("\
-                  +str(100*random_forest_correct/random_forest_tests)+"%)")
+            try:
+                from decision_tree_CARS import run_classifier as run_decision_tree
+            except:
+                print("Cannot import decision tree classifier for the car dataset. Exiting.")
+                sys.exit()
 
 
-    # If we ran the decision tree classifier, print the results to the console
-    if decision_tree_tests != 0:
-        print("\nFINAL RESULT FOR DECISION TREE CLASSIFIER:")
-        print("\t"+str(decision_tree_correct)+"/"+str(decision_tree_tests)+" were correctly predicted ("\
-                  +str(100*decision_tree_correct/decision_tree_tests)+"%)")
+        # Run the iris classifier N_TRIALS times
+        for i in range(N_TRIALS):
+            print("\nRunning trial "+str(i+1)+" of "+str(N_TRIALS)+"...")
+            correct, tests = run_decision_tree(PCT_TRAIN)
+            TOTAL_CORRECT += correct
+            TESTS += tests
 
 
-    if TEST_LEARNING:
-        if COMPARE or CLASSIFIER == 'random-forest':
-            plt.scatter(pcts, random_forest_results, color='r')
-        if COMPARE or CLASSIFIER == 'decision-tree':
-            plt.scatter(pcts, decision_tree_results, color='b')
-        plt.show()
-
-
-    if COMPARE and not TEST_LEARNING:
-        if random_forest_correct == decision_tree_correct:
-            print("\nBoth classifiers performed equally across "+str(N_TRIALS)+" independent trials ("+str(decision_tree_tests)+" tests total)\n")
-        elif random_forest_correct > decision_tree_correct:
-            print("\nThe random forest classifier outperformed the decision tree classifier by "+str(random_forest_correct - decision_tree_correct)+\
-                  " tests out of "+str(decision_tree_tests)+" total\n")
-            print("The random forest classifier performed %.2f" % (100*(random_forest_correct - decision_tree_correct) / decision_tree_tests)+\
-                  "% better than the decision tree classifier\n")
-        else:
-            print("\nThe decision tree classifier outperformed the random forest classifier by "+str(decision_tree_correct - random_forest_correct)+\
-                  " tests out of "+str(decision_tree_tests)+" total\n")
-            print("The decision classifier performed %.2f" % (100*(decision_tree_correct - random_forest_correct) / decision_tree_tests)+\
-                  "% better than the random forest classifier\n")
-
-
+    print("\nFINAL RESULT: "+str(TOTAL_CORRECT)+"/"+str(TESTS)+" were correctly predicted ("+str(100*TOTAL_CORRECT/TESTS)+"%)")
 
 
 
 def get_args():
     '''Parse any command line arguments to the program
-        parameters:
-            None
-        returns:
-            None (stored in globals)
-    '''
-
-    global CLASSIFIER, N_TRIALS, PCT_TRAIN, DATASET, COMPARE, VERBOSE, TEST_LEARNING
+        No parameters, no return (stored in globals)'''
+    global CLASSIFIER, N_TRIALS, PCT_TRAIN, DATASET
 
     for arg in sys.argv:
         if arg.startswith('--classifier='): 
@@ -182,9 +111,6 @@ def get_args():
                 print("Error: dataset \'"+DATASET+"\' is not a valid dataset")
                 print("Dataset must be one of the following:")
                 for d in DATASETS: print("\t"+d)
-        elif arg == '--compare': COMPARE = True
-        elif arg == '--verbose': VERBOSE = True
-        elif arg == '--testlearn': TEST_LEARNING = True
         
 
 def print_usage_err():
