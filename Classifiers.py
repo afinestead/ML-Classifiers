@@ -59,7 +59,7 @@ def main():
             for i in pcts:
                 print("\nTesting random forest learning ability by training on "+str(i)+"%"+" of data")
                 correct, tests = run_random_forest(data, pct_train=i, verbose=VERBOSE)
-                print("\t"+str(100 * correct / tests)+"%"+" correct")
+                print("\t%.2f" % (100 * correct / tests), "%"+" correct")
                 random_forest_results.append((correct / tests))
 
         # Run the random forests classifier N_TRIALS times on data from DATASET
@@ -91,7 +91,7 @@ def main():
             for i in pcts:
                 print("\nTesting decision tree learning ability by training on "+str(i)+"%"+" of data")
                 correct, tests = run_decision_tree(pct_train=i, verbose=VERBOSE)
-                print("\t"+str(100 * correct / tests)+"%"+" correct")
+                print("\t%.2f" % (100 * correct / tests), "%"+" correct")
                 decision_tree_results.append((correct / tests))
 
         # Run the classifier N_TRIALS times
