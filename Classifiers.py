@@ -1,9 +1,9 @@
 import sys
 from parser import parse_data as parse
+import matplotlib.pyplot as plt
 
 
-
-USAGE = "USAGE: python3 Classifiers.py [--classifier=(str)] [--dataset=(str)] [--trials=(int)] [--train=(float)] [--compare]"
+USAGE = "USAGE: python3 Classifiers.py [--classifier=(str)] [--dataset=(str)] [--trials=(int)] [--train=(float)] [--compare] [--testlearn]"
 
 # Arguments to classifier program
 CLASSIFIER = 'random-forest'
@@ -12,6 +12,7 @@ N_TRIALS = 1
 PCT_TRAIN = 0.90
 COMPARE = False
 VERBOSE = None
+TEST_LEARNING = False
 
 
 CLASSIFIERS = ['random-forest', 'decision-tree']
@@ -19,10 +20,12 @@ DATASETS = ['iris', 'cars']
 
 
 def main():
-    global CLASSIFIER, N_TRIALS, PCT_TRAIN, VERBOSE
+    global CLASSIFIER, N_TRIALS, PCT_TRAIN, VERBOSE, TEST_LEARNING
     get_args()
 
     if VERBOSE is None: VERBOSE = not COMPARE
+    if TEST_LEARNING: pcts = [x / 100 for x in range(5, 100, 5)]
+
 
     random_forest_tests = 0
     random_forest_correct = 0
@@ -51,12 +54,21 @@ def main():
 
             data = parse('Car.csv', data_format=[str, str, str, int, int, str, str])
         
+        if TEST_LEARNING:
+            random_forest_results = []
+            for i in pcts:
+                print("\nTesting random forest learning ability by training on "+str(i)+"%"+" of data")
+                correct, tests = run_random_forest(data, pct_train=i, verbose=VERBOSE)
+                print("\t"+str(100 * correct / tests)+"%"+" correct")
+                random_forest_results.append((correct / tests))
+
         # Run the random forests classifier N_TRIALS times on data from DATASET
-        for i in range(N_TRIALS):
-            print("\nRunning random forest trial "+str(i+1)+" of "+str(N_TRIALS)+"...")
-            correct, tests = run_random_forest(data, pct_train=PCT_TRAIN, verbose=VERBOSE)
-            random_forest_correct += correct
-            random_forest_tests += tests
+        else:
+            for i in range(N_TRIALS):
+                print("\nRunning random forest trial "+str(i+1)+" of "+str(N_TRIALS)+"...")
+                correct, tests = run_random_forest(data, pct_train=PCT_TRAIN, verbose=VERBOSE)
+                random_forest_correct += correct
+                random_forest_tests += tests
 
 
 
@@ -73,12 +85,22 @@ def main():
             print("Decision tree not yet implemented for car dataset. Exiting.")
             sys.exit()
 
-        # Run the iris classifier N_TRIALS times
-        for i in range(N_TRIALS):
-            print("\nRunning decision tree trial "+str(i+1)+" of "+str(N_TRIALS)+"...")
-            correct, tests = run_decision_tree(PCT_TRAIN, verbose=VERBOSE)
-            decision_tree_correct += correct
-            decision_tree_tests += tests
+        
+        if TEST_LEARNING:
+            decision_tree_results = []
+            for i in pcts:
+                print("\nTesting decision tree learning ability by training on "+str(i)+"%"+" of data")
+                correct, tests = run_decision_tree(pct_train=i, verbose=VERBOSE)
+                print("\t"+str(100 * correct / tests)+"%"+" correct")
+                decision_tree_results.append((correct / tests))
+
+        # Run the classifier N_TRIALS times
+        else:
+            for i in range(N_TRIALS):
+                print("\nRunning decision tree trial "+str(i+1)+" of "+str(N_TRIALS)+"...")
+                correct, tests = run_decision_tree(pct_train=PCT_TRAIN, verbose=VERBOSE)
+                decision_tree_correct += correct
+                decision_tree_tests += tests
 
         
 
@@ -96,7 +118,15 @@ def main():
                   +str(100*decision_tree_correct/decision_tree_tests)+"%)")
 
 
-    if COMPARE:
+    if TEST_LEARNING:
+        if COMPARE or CLASSIFIER == 'random-forest':
+            plt.scatter(pcts, random_forest_results, color='r')
+        if COMPARE or CLASSIFIER == 'decision-tree':
+            plt.scatter(pcts, decision_tree_results, color='b')
+        plt.show()
+
+
+    if COMPARE and not TEST_LEARNING:
         if random_forest_correct == decision_tree_correct:
             print("\nBoth classifiers performed equally across "+str(N_TRIALS)+" independent trials ("+str(decision_tree_tests)+" tests total)\n")
         elif random_forest_correct > decision_tree_correct:
@@ -113,6 +143,7 @@ def main():
 
 
 
+
 def get_args():
     '''Parse any command line arguments to the program
         parameters:
@@ -121,7 +152,7 @@ def get_args():
             None (stored in globals)
     '''
 
-    global CLASSIFIER, N_TRIALS, PCT_TRAIN, DATASET, COMPARE, VERBOSE
+    global CLASSIFIER, N_TRIALS, PCT_TRAIN, DATASET, COMPARE, VERBOSE, TEST_LEARNING
 
     for arg in sys.argv:
         if arg.startswith('--classifier='): 
@@ -153,6 +184,7 @@ def get_args():
                 for d in DATASETS: print("\t"+d)
         elif arg == '--compare': COMPARE = True
         elif arg == '--verbose': VERBOSE = True
+        elif arg == '--testlearn': TEST_LEARNING = True
         
 
 def print_usage_err():
