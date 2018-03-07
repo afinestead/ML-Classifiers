@@ -8,7 +8,7 @@ from parser import parse_data as parse
 DATA_FORMAT = [str, str, str, int, int, str, str]
 CLASSIFICATION = 0  # Index where target is stored in data
 
-def run_classifier(data, pct_train=0.90):
+def run_classifier(data, pct_train=0.90, verbose=True):
     '''Run the random forest classifier on the car dataset
         parameters:
             data---- list of lists, required
@@ -16,6 +16,8 @@ def run_classifier(data, pct_train=0.90):
             pct_train---- float, optional (default=0.90)
                           The percentage of data that will be used to train the model
                           Percentage of test data is therefore 1-pct_train
+            verbose---- bool, optional (default=True)
+                        Controls whether the classifier prints results to the console
             returns:
                 tuple of (number of correctly classified items, number of tests run)
                 If model performs perfectly, correct=tests
